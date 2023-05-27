@@ -1,3 +1,3 @@
 const {validatePostBody, validatePutBody} = require('./validateBody')
-
-module.exports = {validatePostBody, validatePutBody}
+const isValidId = require('./isValidId')
+module.exports = {validatePostBody, validatePutBody, isValidId}
