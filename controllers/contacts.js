@@ -1,15 +1,15 @@
-const contacts = require('../models/contacts')
+const {Contact} = require('../models/contact')
 const { HttpError, ctrlWrapper } = require('../helpers')
-
+ 
 
 const listContacts = async (req, res) => {
-        const allContacts = await contacts.listContacts();
+        const allContacts = await Contact.find();
         res.json(allContacts)
 }
 
 const getContactById = async (req, res) => {
     const { id } = req.params;
-    const oneContact = await contacts.getContactById(id);
+    const oneContact = await Contact.findById(id);
     if (!oneContact) {
       throw HttpError(404, 'Not found');
     }
@@ -17,26 +17,34 @@ const getContactById = async (req, res) => {
 }
 
 const addContact = async (req, res) => {
-    const newContact = await contacts.addContact(req.body);
+    const newContact = await Contact.create(req.body);
     res.status(201).json(newContact)
+}
+
+const updateContact = async (req, res) => {
+  const { id } = req.params;
+  const updatedContact = await Contact.findByIdAndUpdate(id, req.body, {new: true});
+  if (!updatedContact) {
+    throw HttpError(404, 'Not found')
+  }
+  res.json(updatedContact)
+}
+const updateStatusContact = async (req, res) => {
+  const { id } = req.params;
+  const updatedContact = await Contact.findByIdAndUpdate(id, req.body, {new: true});
+  if (!updatedContact) {
+    throw HttpError(404, 'Not found')
+  }
+  res.json(updatedContact)
 }
 
 const removeContact = async (req, res) => {
     const { id } = req.params;
-    const removedContact = await contacts.removeContact(id);
+    const removedContact = await Contact.findByIdAndDelete(id);
     if (!removedContact) {
       throw HttpError(404, 'Not found');
     }
     res.json({ message: 'Contact deleted' })
-}
-
-const updateContact = async (req, res) => {
-    const { id } = req.params;
-    const updatedContact = await contacts.updateContact(id, req.body);
-    if (!updatedContact) {
-      throw HttpError(404, 'Not found')
-    }
-    res.json(updatedContact)
 }
 
 module.exports = {
@@ -45,4 +53,5 @@ module.exports = {
   getContactById: ctrlWrapper(getContactById),
   removeContact: ctrlWrapper(removeContact),
   updateContact: ctrlWrapper(updateContact),
+  updateFavorite: ctrlWrapper(updateStatusContact)
 }
