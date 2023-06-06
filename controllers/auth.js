@@ -1,12 +1,9 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-require("dotenv").config()
-
 const { User } = require('../models/users')
 const { HttpError, ctrlWrapper } = require('../helpers')
 
 const {SECRET_KEY} = process.env;
-
 
 const register = async (req, res) => {
     const { email, password } = req.body;
@@ -21,6 +18,7 @@ const register = async (req, res) => {
     const newUser = await User.create({...req.body, password: hashPassword})
     res.status(201).json({email: newUser.email})
 }
+
 const login = async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email })
@@ -36,17 +34,34 @@ const login = async (req, res) => {
         id: user._id,
     }
 
-    const token = jwt.sign(payload, SECRET_KEY, {expiresIn: "23h"})
-    console.log(SECRET_KEY);
-    res.json({token})
+    const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "23h" });
+
+    await User.findByIdAndUpdate(user._id, {token})
+        
+    res.status(200).json({token, user})
 }
+
 const logout = async (req, res) => {
-    
+    const { _id } = req.user;
+    await User.findByIdAndUpdate(_id, {token: ""})
+
+    res.status(204).json({
+        message: "Logout success"
+    })
+}
+
+const current  = async (req, res) => {
+    const { email, subscription } = req.user;
+    res.status(200).json({
+        email,
+        subscription
+    })
 }
 
 
 module.exports = {
     register: ctrlWrapper(register),
     login: ctrlWrapper(login),
-    logout: ctrlWrapper(logout)
+    logout: ctrlWrapper(logout),
+    current: ctrlWrapper(current)
 }
